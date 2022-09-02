@@ -1,0 +1,44 @@
+v1-生成中间结果：
+demo文件：test_demo1.py
+description2pix参数设定:fg_path_list=[...], combine_mode=1
+输入：bg路径, fg路径list([fg_path1,fg_path2,...]), description
+输出:fg-out路径list，合成路径
+  bg路径强制为:picture_hub/bg/(某个库，例如grasslands)/xxx.jpeg，目前库支持sand-沙漠，grasslands-草原，construction-工地
+  fg路径强制为:picture_hub/fg/(某个库，例如grasslands)/xxx.jpeg，目前库支持ox,people,sheep(car没有找到的合适的)
+  fg-out路径为去掉了背景后的前景路径，强制为:picture_hub/fg/图片原名.jpeg_图片库_removebg.jpeg
+  图片合成路径强制为:picture_hub/output/xxxx_xxxx.jpeg
+  description:描述文字，要求同时包含背景与前景
+对前端需求：
+  传入：前端需要根据用户输入的背景与前景，找到对应库，随机抽一条bg路径和一串fg路径，传给接口bg路径&fg路径lis&用户输入的文字
+  传出：移除fg背景的fg存储路径，合成后的图片路径
+
+v2-不生成中间结果：
+demo文件：test_demo2.py
+description2pix参数设定:fg_path_list=None, combine_mode=2
+输入：bg路径,  description
+输出:合成路径
+  bg路径强制为:picture_hub/bg/(某个库，例如grasslands)/xxx.jpeg，目前库支持sand-沙漠，grasslands-草原，construction-工地
+  fg路径强制为:picture_hub/fg/(某个库，例如grasslands)/xxx.jpeg，目前库支持ox,people,sheep(car没有找到的合适的)
+  图片合成路径强制为:picture_hub/output/xxxx_xxxx.jpeg
+  description:描述文字，要求同时包含背景与前景
+对前端需求：
+  传入：前端需要根据用户输入的背景与前景，找到对应库，随机抽一条bg路径，传给接口bg路径&fg路径lis&用户输入的文字
+  传出：合成后的图片路径
+
+核心函数description2pix,文件为combine_picturev2.py
+parameter:
+    -description:用户输入语料
+    -base_dir:图片路径，强制为picture_hub
+    -bg_path:bg路径
+    -fg_path_list：fg路径list
+    -combine_mode：合成方式1，1(展示中间结果)或者2(不展示中间结果)
+return:
+    output_path:合成后图片路径
+    fg_out_path_list：fg提取前景后存储路径(combine_mode=2时不返回)
+
+图片库picture_hub需求：
+1.路径固定为./picture_hub
+2.picture_hub下有bg,fg,fg_temp,output四个文件夹，文件夹内有具体的图片库。
+3.bg,fg下各个图片库中，图片文件名强制为fg1.jpeg,fg2.jpeg....(或bg1.jpeg,bg2.jpeg)，必须按序号标
+4.fg_temp为移除了背景后的前景，存储格式为原图片名.jpeg_图片库名_removebg.jpeg，会覆盖，仅限于当次展示
+5.output为最终合成图片库，命名规则为时间戳_随机数.jpeg
