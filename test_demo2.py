@@ -1,7 +1,7 @@
 
 from combine_picturev2 import *
 ## combine_mode = 2
-description = "草原上有一群牛，一群羊，一群马，一群骆驼" #输入文字
+description = "工地上有一群人，一群羊，一群马，一群骆驼" #输入文字
 # base_dir = 'picture_hub'
 # # bg_path = 'picture_hub/bg/grasslands/bg1.jpeg'
 # bg_path = 'picture_hub/bg/sand/bg2.jpeg'

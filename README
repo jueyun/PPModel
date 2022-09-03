@@ -1,49 +1,65 @@
-v1-生成中间结果：
+v1-生成中间结果的测试版本：要求按搜索背景-搜索前景-前景提取-图片合成顺序执行
 demo文件：test_demo1.py
-description2pix参数设定:fg_path_list=[...], combine_mode=1
-输入：bg路径, fg路径list([fg_path1,fg_path2,...]), description
-输出:fg-out路径list，合成路径
-  bg路径强制为:picture_hub/bg/(某个库，例如grasslands)/xxx.jpeg，目前库支持sand-沙漠，grasslands-草原，construction-工地
-  fg路径强制为:picture_hub/fg/(某个库，例如grasslands)/xxx.jpeg，目前库支持ox,people,sheep(car没有找到的合适的)
-  fg-out路径为去掉了背景后的前景路径，强制为:picture_hub/fg/图片原名.jpeg_图片库_removebg.jpeg
-  图片合成路径强制为:picture_hub/output/xxxx_xxxx.jpeg
-  description:描述文字，要求同时包含背景与前景
-对前端需求：
-  传入：前端需要根据用户输入的背景与前景，找到对应库，随机抽一条bg路径和一串fg路径，传给接口bg路径&fg路径lis&用户输入的文字
-  传出：移除fg背景的fg存储路径，合成后的图片路径
+接口：
+  1.搜索背景接口：search_bg
+    输入： 
+      description：语料
+      n_picture:输出的图片数
+    输出：随机返回根据语料选择的bg_list，限制4条
+  2.搜索前景接口：search_fg
+    输入： 
+      description：语料
+      n_picture:输出的图片数d
+    输出：随机返回根据语料选择的fg_list，限制4条
+  3.前景提取接口: get_fg，只能提取一种前景
+    输入： 
+      fg_path_list，待提取的fg_list
+      func_mode，提取方法，目前限制1=pphuman-model
+    输出：fg_out_path_list, 提取后fg图片路径list,固定为picture_hub/fg_temp/原名_removebg.jpeg
 
-v2-不生成中间结果：
+  4.图片合成接口：combine_pic_testv，全部fg拼接在每条bg上
+    输入：
+      description：语料
+      bg_path_list：背景路径list
+      fg_rm_path_list:移除背景后的fg_list
+      func_mode:提取方法，目前限制1=按位拼接
+      base_dir:图片路径
+    输出：out_path_list:合成后图片路径，固定为picture_hub/output_test_v/
+
+v2-最终版本-不生成中间结果：
 demo文件：test_demo2.py
-description2pix参数设定:fg_path_list=None, combine_mode=2
-输入： description
-输出:合成路径，背景图路径
-  bg路径强制为:picture_hub/bg/(某个库，例如grasslands)/xxx.jpeg，目前库支持sand-沙漠，grasslands-草原，construction-工地
-  fg路径强制为:picture_hub/fg/(某个库，例如grasslands)/xxx.jpeg，目前库支持ox,people,sheep(car没有找到的合适的)
-  图片合成路径强制为:picture_hub/output/xxxx_xxxx.jpeg
-  description:描述文字，要求同时包含背景与前景
-对前端需求：
-  传入：前端传入用户输入的文字
-  传出：合成后的图片路径，背景图路径
+接口：
+  description2pix参数设定:fg_path_list=None, combine_mode=2
+  输入： description
+  输出:合成路径，背景图路径
+    bg路径强制为:picture_hub/bg/(某个库，例如grasslands)/xxx.jpeg，目前库支持sand-沙漠，grasslands-草原，construction-工地
+    fg路径强制为:picture_hub/fg/(某个库，例如grasslands)/xxx.jpeg，目前库支持ox,people,sheep(car没有找到的合适的)
+    图片合成路径强制为:picture_hub/output/xxxx_xxxx.jpeg
+    description:描述文字，要求同时包含背景与前景
+  对前端需求：
+    传入：前端传入用户输入的文字
+    传出：合成后的图片路径，背景图路径
 
-核心函数description2pix,文件为combine_picturev2.py
-parameter:
-    -description:用户输入语料
-    -base_dir:图片路径，强制为picture_hub
-    -bg_path:bg路径
-    -fg_path_list：fg路径list
-    -combine_mode：合成方式1，1(展示中间结果)或者2(不展示中间结果)
-return:
-    output_path:合成后图片路径
-    fg_out_path_list：fg提取前景后存储路径(combine_mode=2时不返回)
+  核心函数description2pix,文件为combine_picturev2.py
+  parameter:
+      -description:用户输入语料
+      -base_dir:图片路径，强制为picture_hub
+      -bg_path:bg路径
+      -fg_path_list：fg路径list
+      -combine_mode：合成方式1，1(展示中间结果)或者2(不展示中间结果)
+  return:
+      output_path:合成后图片路径
+      fg_out_path_list：fg提取前景后存储路径(combine_mode=2时不返回)
+
 
 图片库picture_hub需求：
-1.路径固定为./picture_hub
-2.picture_hub下有bg,fg,fg_temp,output四个文件夹，文件夹内有具体的图片库。
-3.bg,fg下各个图片库中，图片文件名强制为fg1.jpeg,fg2.jpeg....(或bg1.jpeg,bg2.jpeg)，必须按序号标
-4.fg_temp为移除了背景后的前景，存储格式为原图片名.jpeg_图片库名_removebg.jpeg，会覆盖，仅限于当次展示
-5.output为最终合成图片库，命名规则为时间戳_随机数.jpeg
+  1.路径固定为./picture_hub
+  2.picture_hub下有bg,fg,fg_temp,output，output_test_v 5个文件夹，文件夹内有具体的图片库。
+  3.bg,fg下各个图片库中，图片文件名强制为fg1.jpeg,fg2.jpeg....(或bg1.jpeg,bg2.jpeg)，必须按序号标
+  4.fg_temp为移除了背景后的前景，存储格式为原图片名.jpeg_图片库名_removebg.jpeg，会覆盖，仅限于当次展示
+  5.output为最终合成图片库，命名规则为时间戳_随机数.jpeg
+  6.output_test_v为测试版本最终合成图片库，命名规则为时间戳_随机数.jpeg
 
-
-目前有的图片库（更新中）：
-（1）bg:草原（检测绿色）-grasslands，沙漠（检测橘黄色）-sand，工地（检测橘黄色）-construction
-（2）fg:羊-sheep，牛-ox，骆驼-camel，人-people，马-horse，车-car（效果不好，素材非常少）
+  目前有的图片库（更新中）：
+  （1）bg:草原（检测绿色）-grasslands，沙漠（检测橘黄色）-sand，工地（检测橘黄色）-construction
+  （2）fg:羊-sheep，牛-ox，人-people，马-horse

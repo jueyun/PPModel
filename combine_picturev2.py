@@ -159,19 +159,14 @@ def seg_image(config, img_path, save = False):
     out_img = predictor.run(img, bg_img)
     if not save:
         return out_img
-
     img_path_split = img_path.split('/')
-    print(img_path_split)
     img_path_split[-3] = 'fg_temp'
     img_path_split[-2] = img_path_split[-1] + '_' + img_path_split[-2] + '_removebg.jpeg'
     img_path_split = img_path_split[:-1]
-    
     img_path_new = '/'.join(img_path_split)
-    print(img_path_new)
     cv2.imwrite(img_path_new , out_img)
     return out_img, img_path_new
-
-
+    
 
 ## 合成
 def combine_picture(bg_img, fg_img, fg_shape, offset):
@@ -190,7 +185,6 @@ def combine_picture(bg_img, fg_img, fg_shape, offset):
     img2gray = cv2.cvtColor(fg_img, cv2.COLOR_BGR2GRAY)
     ret, mask = cv2.threshold(img2gray, 200, 255, cv2.THRESH_BINARY)
     mask_inv = cv2.bitwise_not(mask)
-    print(mask.shape)
     img1_bg = cv2.bitwise_and(roi,roi,mask = mask)
     img2_fg = cv2.bitwise_and(fg_img,fg_img,mask = mask_inv)
     dst = cv2.add(img1_bg,img2_fg)
@@ -219,7 +213,6 @@ def detect_bg(bg_img, color):
         if max_area < w * h:
             point = (x, y, w, h)
             max_area = w * h 
-        # print((x, y, w, h))
     return point
 
 ## 生成前景位置
@@ -271,13 +264,11 @@ def clear_and_combine(base_dir, bg_name, fg_name, bg_max_n, fg_max_n, color):
     bg_img = cv2.resize(bg_img, (bg_w, bg_h))
     ## bg area
     point = detect_bg(bg_img, color)
-    print('point:',point)
     before_x = point[0]
     ## fg-width范围根据 bg-width确定
     w_range = [bg_w//10, bg_w//3]
     ## num_fg
     n_fg = random.randint(1,8)
-    print(n_fg)
     for i in range(n_fg):
         fg_path = base_dir + '/' + fg_name + '/fg' + str(random.randint(1,fg_max_n)) + '.jpeg'
         # fg_img = cv2.imread(fg_path)
@@ -288,11 +279,9 @@ def clear_and_combine(base_dir, bg_name, fg_name, bg_max_n, fg_max_n, color):
         if not continue_generate:
             break
         before_x  = loc_x + w
-        print(loc_x, loc_y, w, h)
         bg_img = combine_picture(bg_img, fg_img, (w, h), (loc_x, loc_y))
 
-    output_path = base_dir + '/' + 'output/' + str(int(time.time())) + '_' + str(random.randint(0,1000000)) + '.jpg'
-    # print(output_path)
+    output_path = base_dir + '/' + 'output/' + str(int(time.time())) + '_' + str(random.randint(0,1000000)) + '.jpeg'
     cv2.imwrite(output_path, bg_img)
     return output_path
 
@@ -319,7 +308,6 @@ def clear_and_combine_v1(base_dir, bg_path, fg_path_list, color):
     bg_img = cv2.resize(bg_img, (bg_w, bg_h))
     ## bg area
     point = detect_bg(bg_img, color)
-    print('point:',point)
     before_x = point[0]
     ## fg-width范围根据 bg-width确定
     w_range = [bg_w//10, bg_w//3]
@@ -336,13 +324,13 @@ def clear_and_combine_v1(base_dir, bg_path, fg_path_list, color):
         if not continue_generate:
             break
         before_x  = loc_x + w
-        print(loc_x, loc_y, w, h)
         bg_img = combine_picture(bg_img, fg_img, (w, h), (loc_x, loc_y))
 
-    output_path = base_dir + '/' + 'output/' + str(int(time.time())) + '_' + str(random.randint(0,1000000)) + '.jpg'
+    output_path = base_dir + '/' + 'output/' + str(int(time.time())) + '_' + str(random.randint(0,1000000)) + '.jpeg'
     cv2.imwrite(output_path, bg_img)
     return output_path, fg_out_path_list
 
+#############################以下是demo2################################
 def clear_and_combine_v2(base_dir, bg_name, fg_list, fg_n_dict, color):
     '''
     parameter:
@@ -367,14 +355,12 @@ def clear_and_combine_v2(base_dir, bg_name, fg_list, fg_n_dict, color):
     bg_img = cv2.resize(bg_img, (bg_w, bg_h))
     ## bg area
     point = detect_bg(bg_img, color)
-    print('point:',point)
     before_x = point[0]
     ## fg-width范围根据 bg-width确定
     w_range = [bg_w//10, bg_w//3]
     ## num_fg:[len(fg_list),8]
     n_base_fg = len(fg_list)
     n_fg = random.randint(n_base_fg,8)
-    print(n_fg)
     for i in range(n_fg):
         if i < n_base_fg:
             idx = i
@@ -383,7 +369,6 @@ def clear_and_combine_v2(base_dir, bg_name, fg_list, fg_n_dict, color):
         fg_name = fg_list[idx]
         fg_n = fg_n_dict[fg_name]
         fg_path = base_dir + '/fg/' + fg_name + '/fg' + str(random.randint(1,fg_n)) + '.jpeg'
-        print(fg_path)
         fg_img = seg_image(fg_seg_config, fg_path)
         fg_w, fg_h = fg_img.shape[1], fg_img.shape[0]
         fg_wh_ratio = fg_h / fg_w
@@ -391,11 +376,9 @@ def clear_and_combine_v2(base_dir, bg_name, fg_list, fg_n_dict, color):
         if not continue_generate:
             break
         before_x  = loc_x + w
-        print(loc_x, loc_y, w, h)
         bg_img = combine_picture(bg_img, fg_img, (w, h), (loc_x, loc_y))
 
     output_path = base_dir + '/' + 'output/' + str(int(time.time())) + '_' + str(random.randint(0,1000000)) + '.jpeg'
-    # print(output_path)
     cv2.imwrite(output_path, bg_img)
     return output_path, bg_path
 
@@ -422,7 +405,6 @@ def description2pix(description, base_dir='picture_hub', bg_path=None, fg_path_l
     elif '工地' in description:
         color = 'orange'
         bg_name = 'construction'
-    print(color)
     ## combine_mode-1
     if combine_mode == 1:
         output_path, fg_out_path_list = clear_and_combine_v1(base_dir, bg_path, fg_path_list, color)
@@ -441,34 +423,126 @@ def description2pix(description, base_dir='picture_hub', bg_path=None, fg_path_l
         if '人' in description:
             fg_list.append('people')
             fg_n_dict['people'] = len(os.listdir(base_dir + '/fg/people'))
-        if '车' in description:
-            fg_list.append('car')
-            fg_n_dict['car'] = len(os.listdir(base_dir + '/fg/car'))
-        if '骆驼' in description:
-            fg_list.append('camel')
-            fg_n_dict['camel'] = len(os.listdir(base_dir + '/fg/camel'))
         if '马' in description:
             fg_list.append('horse')
             fg_n_dict['horse'] = len(os.listdir(base_dir + '/fg/horse'))
-        print(fg_list, fg_n_dict)
         output_path, bg_path = clear_and_combine_v2(base_dir, bg_name, fg_list, fg_n_dict, color)
         return output_path, bg_path
 
+#############################以下是demo1########################
+# 1.搜索背景接口
+def search_bg(description, n_picture=4, base_dir='picture_hub'):
+    '''
+    parameter:
+        -description:用户输入语料
+        -n_picture:图片张数
+        -base_dir:图片路径
+    return:
+        bg_path_list:bg图片路径list,[bg_path1,bg_path2...]
+    '''
+    if '草原' in description:
+        bg_name = 'grasslands'
+    elif '沙' in description:
+        bg_name = 'sand'
+    elif '工地' in description:
+        bg_name = 'construction'
+    bg_n = len(os.listdir(base_dir + '/bg/' + bg_name))
+    bg_choice = np.random.choice(range(1,bg_n+1), n_picture, replace=False)
+    bg_path_list = [base_dir + '/bg/' + bg_name + '/bg' + str(ii) + '.jpeg' for ii in bg_choice]
+    return bg_path_list 
 
-# def description2pix(description, base_dir):
-#     '''
-#     parameter:
-#         -description:用户输入语料
-#         -base_dir:图片路径
-#     return:
-#         output_path:合成后图片路径
-#     '''
-#     if '草原' in description:
-#         bg_name = 'bg/grasslands'
-#         color = 'green'
-#     if '羊' in description:
-#         fg_name = 'fg/sheep'
-#     fg_max_n = len(os.listdir(base_dir + '/' + fg_name))
-#     bg_max_n = len(os.listdir(base_dir + '/' + bg_name))
-#     output_path = clear_and_combine(base_dir, bg_name, fg_name, bg_max_n, fg_max_n, color)
-#     return output_path
+# 2.搜索前景接口-限制一种前景
+def search_fg(description, n_picture=4, base_dir='picture_hub'):
+    '''
+    parameter:
+        -description:用户输入语料
+        -n_picture:图片张数
+        -base_dir:图片路径
+    return:
+        fg_path_list:fg图片路径list,[fg_path1,fg_path2...]
+    '''
+    if '羊' in description:
+        fg_name = 'sheep'
+    elif '牛' in description:
+        fg_name = 'ox'
+    elif '人' in description:
+        fg_name = 'people'
+    elif '马' in description:
+        fg_name = 'horse'
+    fg_n = len(os.listdir(base_dir + '/fg/' + fg_name))
+    fg_choice = np.random.choice(range(1,fg_n+1), n_picture, replace=False)
+    fg_path_list = [base_dir + '/fg/' + fg_name + '/fg' + str(ii) + '.jpeg' for ii in fg_choice]
+    return fg_path_list 
+
+# 3.前景提取接口
+def get_fg(fg_path_list, func_mode = 1):
+    '''
+    parameter:
+        -fg_path_list:待提取fg_path_list
+        -func_mode:提取方法
+        -base_dir:图片路径
+    return:
+        fg_out_path_list:提取后后fg图片路径list,[fg_path1,fg_path2...],固定为picture_hub/fg_temp/原名_removebg.jpeg
+    '''
+    fg_seg_config = 'inference_model/deploy.yaml'
+    fg_out_path_list = []
+    for img_path  in fg_path_list:
+        if func_mode == 1:
+            _, fg_out_path = seg_image(fg_seg_config, img_path, save = True)
+            fg_out_path_list.append(fg_out_path)
+    return fg_out_path_list
+
+
+# 4.图片合成接口-全部拼接
+def combine_pic_testv(description, bg_path_list, fg_rm_path_list, func_mode = 1, base_dir='picture_hub'):
+    '''
+    parameter:
+        -description:用户输入语料
+        -base_dir:图片路径
+        -bg_path_list:bg路径
+        -fg_rm_path_list:移除背景后的前景路径
+        -func_mode:合成方法
+    return:
+        out_path_list：合成路径list，为picture_hub/output_test_v
+    '''
+    ## 1.根据description获取检测颜色
+    if '草原' in description:
+        color = 'green'
+    elif '沙' in description:
+        color = 'orange'
+    elif '工地' in description:
+        color = 'orange'
+    ## 2.合成
+    out_path_list = []
+    for idx in range(len(bg_path_list)):
+        bg_path = bg_path_list[idx]
+        bg_img = cv2.imread(bg_path)
+        bg_w, bg_h = bg_img.shape[1], bg_img.shape[0]
+        bg_wh_ratio = bg_h / bg_w
+        bg_w = max(800, bg_w)
+        bg_h = int(bg_w * bg_wh_ratio)
+        bg_img = cv2.resize(bg_img, (bg_w, bg_h))
+        ## bg area
+        point = detect_bg(bg_img, color)
+        before_x = point[0]
+        ## fg-width范围根据 bg-width确定
+        w_range = [bg_w//10, bg_w//3]
+        ## num_fg
+        n_fg = len(fg_rm_path_list)
+        for i in range(n_fg):
+            fg_path = fg_rm_path_list[i]
+            fg_img = cv2.imread(fg_path)
+            fg_w, fg_h = fg_img.shape[1], fg_img.shape[0]
+            fg_wh_ratio = fg_h / fg_w
+            (loc_x, loc_y, w, h), continue_generate = generate_fg_wh(w_range, fg_wh_ratio, before_x, point, bg_w, bg_h)
+            if not continue_generate:
+                break
+            before_x  = loc_x + w
+            if func_mode == 1:
+                bg_img = combine_picture(bg_img, fg_img, (w, h), (loc_x, loc_y))
+
+        output_path = base_dir + '/' + 'output_test_v/' + str(int(time.time())) + '_' + str(random.randint(0,1000000)) + '.jpeg'
+        cv2.imwrite(output_path, bg_img)
+        out_path_list.append(output_path)
+    return output_path
+
