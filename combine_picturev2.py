@@ -441,6 +441,9 @@ def description2pix(description, base_dir, bg_path, fg_path_list=None, combine_m
         if '骆驼' in description:
             fg_list.append('camel')
             fg_n_dict['camel'] = len(os.listdir(base_dir + '/fg/camel'))
+        if '马' in description:
+            fg_list.append('horse')
+            fg_n_dict['horse'] = len(os.listdir(base_dir + '/fg/horse'))
         print(fg_list, fg_n_dict)
         output_path = clear_and_combine_v2(base_dir, bg_path, fg_list, fg_n_dict, color)
         return output_path

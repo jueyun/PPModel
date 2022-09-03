@@ -42,3 +42,8 @@ return:
 3.bg,fg下各个图片库中，图片文件名强制为fg1.jpeg,fg2.jpeg....(或bg1.jpeg,bg2.jpeg)，必须按序号标
 4.fg_temp为移除了背景后的前景，存储格式为原图片名.jpeg_图片库名_removebg.jpeg，会覆盖，仅限于当次展示
 5.output为最终合成图片库，命名规则为时间戳_随机数.jpeg
+
+
+目前有的图片库（更新中）：
+（1）bg:草原（检测绿色）-grasslands，沙漠（检测橘黄色）-sand，工地（检测橘黄色）-construction
+（2）fg:羊-sheep，牛-ox，骆驼-camel，人-people，马-horse，车-car（效果不好，素材非常少）
