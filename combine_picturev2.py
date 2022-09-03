@@ -141,7 +141,8 @@ def get_bg_img(bg_img_path, img_shape):
     return bg
 
 
-## 抠图-paddle
+################ 抠图方法，可继续在此添加 ################
+## 1.paddle
 def seg_image(config, img_path, save = False):
     '''
     parameter:
@@ -168,7 +169,8 @@ def seg_image(config, img_path, save = False):
     return out_img, img_path_new
     
 
-## 合成
+################ 合成方法，可继续在此添加 ################
+## 1.按位拼接
 def combine_picture(bg_img, fg_img, fg_shape, offset):
     '''
     parameter:
@@ -190,6 +192,24 @@ def combine_picture(bg_img, fg_img, fg_shape, offset):
     dst = cv2.add(img1_bg,img2_fg)
     bg_img[offset[1]:offset[1]+rows, offset[0]:offset[0]+cols] = dst
     return bg_img
+
+## 2.直接相加
+def combine_picture_v2(bg_img, fg_img, fg_shape, offset):
+    '''
+    parameter:
+        -bg_img:bg图片数组
+        -fg_img:fg图片数组
+        -fg_shape: fg形状
+        -offset:fg相对bg位置
+    return:
+        -bg_img:合成后的图片数组
+    '''
+    fg_img = cv2.resize(fg_img, fg_shape)
+    rows,cols,_ = fg_img.shape
+    roi = bg_img[offset[1]:offset[1]+rows, offset[0]:offset[0]+cols]
+    bg_img[offset[1]:offset[1]+rows, offset[0]:offset[0]+cols] = cv2.add(roi,fg_img)
+    return bg_img
+
 
 ## 背景检测
 def detect_bg(bg_img, color):
@@ -538,9 +558,12 @@ def combine_pic_testv(description, bg_path_list, fg_rm_path_list, func_mode = 1,
             if not continue_generate:
                 break
             before_x  = loc_x + w
+            ## 按位拼接
             if func_mode == 1:
                 bg_img = combine_picture(bg_img, fg_img, (w, h), (loc_x, loc_y))
-
+            ## 直接相加
+            elif func_mode == 2:
+                bg_img = combine_picture_v2(bg_img, fg_img, (w, h), (loc_x, loc_y))
         output_path = base_dir + '/' + 'output_test_v/' + str(int(time.time())) + '_' + str(random.randint(0,1000000)) + '.jpeg'
         cv2.imwrite(output_path, bg_img)
         out_path_list.append(output_path)
