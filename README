@@ -15,15 +15,15 @@ description2pix参数设定:fg_path_list=[...], combine_mode=1
 v2-不生成中间结果：
 demo文件：test_demo2.py
 description2pix参数设定:fg_path_list=None, combine_mode=2
-输入：bg路径,  description
-输出:合成路径
+输入： description
+输出:合成路径，背景图路径
   bg路径强制为:picture_hub/bg/(某个库，例如grasslands)/xxx.jpeg，目前库支持sand-沙漠，grasslands-草原，construction-工地
   fg路径强制为:picture_hub/fg/(某个库，例如grasslands)/xxx.jpeg，目前库支持ox,people,sheep(car没有找到的合适的)
   图片合成路径强制为:picture_hub/output/xxxx_xxxx.jpeg
   description:描述文字，要求同时包含背景与前景
 对前端需求：
-  传入：前端需要根据用户输入的背景与前景，找到对应库，随机抽一条bg路径，传给接口bg路径&fg路径lis&用户输入的文字
-  传出：合成后的图片路径
+  传入：前端传入用户输入的文字
+  传出：合成后的图片路径，背景图路径
 
 核心函数description2pix,文件为combine_picturev2.py
 parameter:

@@ -343,19 +343,22 @@ def clear_and_combine_v1(base_dir, bg_path, fg_path_list, color):
     cv2.imwrite(output_path, bg_img)
     return output_path, fg_out_path_list
 
-def clear_and_combine_v2(base_dir, bg_path, fg_list, fg_n_dict, color):
+def clear_and_combine_v2(base_dir, bg_name, fg_list, fg_n_dict, color):
     '''
     parameter:
         -base_dir:图片路径
-        -bg_path:bg路径
+        -bg_name:bg名
         -fg_list:fg-name-list
         -fg_n_dict:每个fg库中前景图片数,key=fg_name, value=fg_n
         -color:需要检测的颜色
     return:
         output_path:合成后图片路径
+        bg_path:背景图路径
     '''
     fg_seg_config = 'inference_model/deploy.yaml'
     ## bg处理
+    bg_n = len(os.listdir(base_dir + '/bg/' + bg_name))
+    bg_path = base_dir + '/bg/' + bg_name + '/bg' + str(random.randint(1,bg_n)) + '.jpeg'
     bg_img = cv2.imread(bg_path)
     bg_w, bg_h = bg_img.shape[1], bg_img.shape[0]
     bg_wh_ratio = bg_h / bg_w
@@ -394,10 +397,10 @@ def clear_and_combine_v2(base_dir, bg_path, fg_list, fg_n_dict, color):
     output_path = base_dir + '/' + 'output/' + str(int(time.time())) + '_' + str(random.randint(0,1000000)) + '.jpeg'
     # print(output_path)
     cv2.imwrite(output_path, bg_img)
-    return output_path
+    return output_path, bg_path
 
 
-def description2pix(description, base_dir, bg_path, fg_path_list=None, combine_mode=1):
+def description2pix(description, base_dir='picture_hub', bg_path=None, fg_path_list=None, combine_mode=1):
     '''
     parameter:
         -description:用户输入语料
@@ -412,10 +415,13 @@ def description2pix(description, base_dir, bg_path, fg_path_list=None, combine_m
     ## 1.根据description获取检测颜色
     if '草原' in description:
         color = 'green'
+        bg_name = 'grasslands'
     elif '沙' in description:
         color = 'orange'
+        bg_name = 'sand'
     elif '工地' in description:
         color = 'orange'
+        bg_name = 'construction'
     print(color)
     ## combine_mode-1
     if combine_mode == 1:
@@ -445,8 +451,9 @@ def description2pix(description, base_dir, bg_path, fg_path_list=None, combine_m
             fg_list.append('horse')
             fg_n_dict['horse'] = len(os.listdir(base_dir + '/fg/horse'))
         print(fg_list, fg_n_dict)
-        output_path = clear_and_combine_v2(base_dir, bg_path, fg_list, fg_n_dict, color)
-        return output_path
+        output_path, bg_path = clear_and_combine_v2(base_dir, bg_name, fg_list, fg_n_dict, color)
+        return output_path, bg_path
+
 
 # def description2pix(description, base_dir):
 #     '''
