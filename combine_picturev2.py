@@ -236,7 +236,7 @@ def detect_bg(bg_img, color):
     return point
 
 ## 生成前景位置
-def generate_fg_wh(w_range, fg_wh_ratio, before_x, point, bg_w, bg_h, max_num=10):
+def generate_fg_wh(w_range, fg_wh_ratio, before_x, point, bg_w, bg_h, i, max_num=10):
     '''
      parameter:
         -w_range:fg-width范围
@@ -250,6 +250,8 @@ def generate_fg_wh(w_range, fg_wh_ratio, before_x, point, bg_w, bg_h, max_num=10
         fg位置，是否合格
     '''
     ## fg_location
+    if i == 0:
+        max_num = int(1e10)
     for _ in range(max_num):
         w = random.randint(w_range[0], w_range[1])
         h = int(fg_wh_ratio * w)
@@ -340,7 +342,7 @@ def clear_and_combine_v1(base_dir, bg_path, fg_path_list, color):
         fg_out_path_list.append(fg_out_path)
         fg_w, fg_h = fg_img.shape[1], fg_img.shape[0]
         fg_wh_ratio = fg_h / fg_w
-        (loc_x, loc_y, w, h), continue_generate = generate_fg_wh(w_range, fg_wh_ratio, before_x, point, bg_w, bg_h)
+        (loc_x, loc_y, w, h), continue_generate = generate_fg_wh(w_range, fg_wh_ratio, before_x, point, bg_w, bg_h,i)
         if not continue_generate:
             break
         before_x  = loc_x + w
@@ -392,7 +394,7 @@ def clear_and_combine_v2(base_dir, bg_name, fg_list, fg_n_dict, color):
         fg_img = seg_image(fg_seg_config, fg_path)
         fg_w, fg_h = fg_img.shape[1], fg_img.shape[0]
         fg_wh_ratio = fg_h / fg_w
-        (loc_x, loc_y, w, h), continue_generate = generate_fg_wh(w_range, fg_wh_ratio, before_x, point, bg_w, bg_h)
+        (loc_x, loc_y, w, h), continue_generate = generate_fg_wh(w_range, fg_wh_ratio, before_x, point, bg_w, bg_h, i)
         if not continue_generate:
             break
         before_x  = loc_x + w
