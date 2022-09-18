@@ -29,25 +29,25 @@ import numpy as np
 import collections
 
 ## 全局badcase
-badcase = {"construction1":{"sheep":[],"ox":[5],"people":[3],"horse":[]},
+badcase = {"construction1":{"sheep":[1],"ox":[5],"people":[3],"horse":[]},
            "construction2":{"sheep":[1],"ox":[3,5],"people":[2,3],"horse":[]},
-           "construction3":{"sheep":[],"ox":[3],"people":[2,3],"horse":[]},
-           "construction4":{"sheep":[],"ox":[3,5],"people":[2,3],"horse":[]},
-           "construction5":{"sheep":[],"ox":[5],"people":[2,3],"horse":[]},
-           "grasslands1":{"sheep":[],"ox":[3,5],"people":[2,3],"horse":[]},
-           "grasslands2":{"sheep":[],"ox":[3],"people":[2,3],"horse":[]},
-           "grasslands3":{"sheep":[],"ox":[3],"people":[2,3],"horse":[]},
-           "grasslands4":{"sheep":[],"ox":[3,5],"people":[2,3],"horse":[]},
-           "grasslands5":{"sheep":[],"ox":[3],"people":[2,3],"horse":[]},
-           "grasslands6":{"sheep":[],"ox":[3],"people":[2,3],"horse":[]},
-           "grasslands7":{"sheep":[],"ox":[3,5],"people":[2,3],"horse":[]},
-           "sand1":{"sheep":[],"ox":[3],"people":[2,3],"horse":[]},
-           "sand2":{"sheep":[],"ox":[5],"people":[2,3],"horse":[]},
-           "sand3":{"sheep":[],"ox":[3,5],"people":[2,3],"horse":[]},
-           "sand4":{"sheep":[],"ox":[5],"people":[2,3],"horse":[]},
-           "sand5":{"sheep":[],"ox":[3],"people":[2,3],"horse":[]},
-           "sand6":{"sheep":[6],"ox":[3,5],"people":[2,3],"horse":[]},
-           "sand7":{"sheep":[],"ox":[5],"people":[2,3],"horse":[]},
+           "construction3":{"sheep":[1],"ox":[3,5],"people":[2,3],"horse":[]},
+           "construction4":{"sheep":[1],"ox":[3,5],"people":[2,3],"horse":[]},
+           "construction5":{"sheep":[1],"ox":[5],"people":[2,3],"horse":[]},
+           "grasslands1":{"sheep":[1],"ox":[3,5],"people":[2,3],"horse":[]},
+           "grasslands2":{"sheep":[1],"ox":[3,5],"people":[2,3],"horse":[]},
+           "grasslands3":{"sheep":[1],"ox":[3,5],"people":[2,3],"horse":[]},
+           "grasslands4":{"sheep":[1],"ox":[3,5],"people":[2,3],"horse":[]},
+           "grasslands5":{"sheep":[1],"ox":[3,5],"people":[2,3],"horse":[]},
+           "grasslands6":{"sheep":[1],"ox":[3,5],"people":[2,3],"horse":[]},
+           "grasslands7":{"sheep":[1],"ox":[3,5],"people":[2,3],"horse":[]},
+           "sand1":{"sheep":[1],"ox":[3,5],"people":[2,3],"horse":[]},
+           "sand2":{"sheep":[1],"ox":[5],"people":[2,3],"horse":[]},
+           "sand3":{"sheep":[1],"ox":[3,5],"people":[2,3],"horse":[]},
+           "sand4":{"sheep":[1],"ox":[5],"people":[2,3],"horse":[]},
+           "sand5":{"sheep":[1],"ox":[3,5],"people":[2,3],"horse":[]},
+           "sand6":{"sheep":[1,6],"ox":[3,5],"people":[2,3],"horse":[]},
+           "sand7":{"sheep":[1],"ox":[5],"people":[2,3],"horse":[]},
 }
 
 def getColorList():
@@ -331,7 +331,7 @@ def clear_and_combine(base_dir, bg_name, fg_name, bg_max_n, fg_max_n, color):
         fg_img = seg_image(fg_seg_config, fg_path)
         fg_w, fg_h = fg_img.shape[1], fg_img.shape[0]
         fg_wh_ratio = fg_h / fg_w
-        (loc_x, loc_y, w, h), continue_generate = generate_fg_wh(w_range, fg_wh_ratio, before_x, point, bg_w, bg_h)
+        (loc_x, loc_y, w, h), continue_generate = generate_fg_wh(w_range, fg_wh_ratio, before_x, point, bg_w, bg_h, i)
         if not continue_generate:
             break
         before_x  = loc_x + w
@@ -379,7 +379,7 @@ def clear_and_combine_v1(base_dir, bg_path, fg_path_list, color, is_remove_badca
         fg_out_path_list.append(fg_out_path)
         fg_w, fg_h = fg_img.shape[1], fg_img.shape[0]
         fg_wh_ratio = fg_h / fg_w
-        (loc_x, loc_y, w, h), continue_generate = generate_fg_wh(w_range, fg_wh_ratio, before_x, point, bg_w, bg_h,i)
+        (loc_x, loc_y, w, h), continue_generate = generate_fg_wh(w_range, fg_wh_ratio, before_x, point, bg_w, bg_h, i)
         if not continue_generate:
             break
         before_x  = loc_x + w
@@ -662,7 +662,7 @@ def combine_pic_testv(description, bg_path_list, fg_rm_path_list, func_mode = 1,
             fg_img = cv2.imread(fg_path)
             fg_w, fg_h = fg_img.shape[1], fg_img.shape[0]
             fg_wh_ratio = fg_h / fg_w
-            (loc_x, loc_y, w, h), continue_generate = generate_fg_wh(w_range, fg_wh_ratio, before_x, point, bg_w, bg_h)
+            (loc_x, loc_y, w, h), continue_generate = generate_fg_wh(w_range, fg_wh_ratio, before_x, point, bg_w, bg_h, i)
             if not continue_generate:
                 break
             before_x  = loc_x + w

@@ -2,7 +2,7 @@
 from combine_picturev2 import *
 # seg_image_all()
 ## combine_mode = 2
-description = "工地上有一群人" #输入文字
+description = "草原上有一群牛，一群羊" #输入文字
 # base_dir = 'picture_hub'
 bg_path = 'picture_hub/bg/construction/bg2.jpeg'
 # bg_path = 'picture_hub/bg/sand/bg2.jpeg'

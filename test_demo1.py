@@ -1,7 +1,7 @@
 
 from combine_picturev2 import *
 ## combine_mode = 1
-description = "草原上有一群牛" #输入文字
+description = "沙漠上有一群马" #输入文字
 base_dir = 'picture_hub'
 
 # 1.搜索背景接口：search_bg(description, n_picture=4, base_dir='picture_hub')
