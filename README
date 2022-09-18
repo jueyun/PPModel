@@ -63,3 +63,14 @@ demo文件：test_demo2.py
   目前有的图片库（更新中）：
   （1）bg:草原（检测绿色）-grasslands，沙漠（检测橘黄色）-sand，工地（检测橘黄色）-construction
   （2）fg:羊-sheep，牛-ox，人-people，马-horse
+
+
+##########################0918补充#######################
+1.badcase:
+  (1)test_demo3逐一拼接背景与前景，构建badcase列表
+  (2)增加badcase处理，description2pix中用is_remove_badcase控制是否移除badcase，默认为true
+2.前景提取预处理
+  (1)添加前景提取预处理批量函数seg_image_all，从fg_origin(原始前景)写入fg(提取后前景)，已完成，无须再运行
+  (2)前景提取通过预处理实现，description2pix中用use_removebg控制是否使用前景提取的预处理，默认为true
+  (3)update测试版本前景库路径为fg_origin(原始前景)，正式版本前景库路径仍然为fg
+3.update图片库

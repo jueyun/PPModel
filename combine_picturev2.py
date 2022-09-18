@@ -28,6 +28,28 @@ from infer import Predictor
 import numpy as np
 import collections
 
+## 全局badcase
+badcase = {"construction1":{"sheep":[],"ox":[5],"people":[3],"horse":[]},
+           "construction2":{"sheep":[1],"ox":[3,5],"people":[2,3],"horse":[]},
+           "construction3":{"sheep":[],"ox":[3],"people":[2,3],"horse":[]},
+           "construction4":{"sheep":[],"ox":[3,5],"people":[2,3],"horse":[]},
+           "construction5":{"sheep":[],"ox":[5],"people":[2,3],"horse":[]},
+           "grasslands1":{"sheep":[],"ox":[3,5],"people":[2,3],"horse":[]},
+           "grasslands2":{"sheep":[],"ox":[3],"people":[2,3],"horse":[]},
+           "grasslands3":{"sheep":[],"ox":[3],"people":[2,3],"horse":[]},
+           "grasslands4":{"sheep":[],"ox":[3,5],"people":[2,3],"horse":[]},
+           "grasslands5":{"sheep":[],"ox":[3],"people":[2,3],"horse":[]},
+           "grasslands6":{"sheep":[],"ox":[3],"people":[2,3],"horse":[]},
+           "grasslands7":{"sheep":[],"ox":[3,5],"people":[2,3],"horse":[]},
+           "sand1":{"sheep":[],"ox":[3],"people":[2,3],"horse":[]},
+           "sand2":{"sheep":[],"ox":[5],"people":[2,3],"horse":[]},
+           "sand3":{"sheep":[],"ox":[3,5],"people":[2,3],"horse":[]},
+           "sand4":{"sheep":[],"ox":[5],"people":[2,3],"horse":[]},
+           "sand5":{"sheep":[],"ox":[3],"people":[2,3],"horse":[]},
+           "sand6":{"sheep":[6],"ox":[3,5],"people":[2,3],"horse":[]},
+           "sand7":{"sheep":[],"ox":[5],"people":[2,3],"horse":[]},
+}
+
 def getColorList():
     color_dict = collections.defaultdict(list)
 
@@ -251,7 +273,7 @@ def generate_fg_wh(w_range, fg_wh_ratio, before_x, point, bg_w, bg_h, i, max_num
     '''
     ## fg_location
     if i == 0:
-        max_num = int(1e10)
+        max_num = int(1e3)
     for _ in range(max_num):
         w = random.randint(w_range[0], w_range[1])
         h = int(fg_wh_ratio * w)
@@ -261,6 +283,18 @@ def generate_fg_wh(w_range, fg_wh_ratio, before_x, point, bg_w, bg_h, i, max_num
             return (loc_x, loc_y, w, h), True
     return (0,0,0,0), False
 
+def remove_badcase(base_dir, bg_key, fg_name, fg_n, max_num = int(1e3)):
+    #维护一个全局badcase:{bg_name+bg_n:{fg_name:[fg_n]}}
+    if bg_key not in badcase:
+        fg_path = base_dir + '/fg/' + fg_name + '/fg' + str(random.randint(1,fg_n)) + '.jpeg'
+        return fg_path
+    bad_fg_list = badcase[bg_key][fg_name]
+    for _ in range(max_num):
+        fg_number = random.randint(1,fg_n)
+        if fg_number not in bad_fg_list:
+            fg_path = base_dir + '/fg/' + fg_name + '/fg' + str(fg_number) + '.jpeg'
+            return fg_path
+    return fg_path
 
 ## 抠图+合成    
 def clear_and_combine(base_dir, bg_name, fg_name, bg_max_n, fg_max_n, color):
@@ -309,7 +343,7 @@ def clear_and_combine(base_dir, bg_name, fg_name, bg_max_n, fg_max_n, color):
 
 
 ## 抠图+合成-v1   
-def clear_and_combine_v1(base_dir, bg_path, fg_path_list, color):
+def clear_and_combine_v1(base_dir, bg_path, fg_path_list, color, is_remove_badcase=True, use_removebg=False):
     '''
     parameter:
         -base_dir:图片路径
@@ -338,7 +372,10 @@ def clear_and_combine_v1(base_dir, bg_path, fg_path_list, color):
     fg_out_path_list = []
     for i in range(n_fg):
         fg_path = fg_path_list[i]
-        fg_img, fg_out_path = seg_image(fg_seg_config, fg_path, save=True)
+        if use_removebg:
+            fg_img, fg_out_path = seg_image(fg_seg_config, fg_path, save=True)
+        else:
+            fg_img = cv2.imread(fg_path)
         fg_out_path_list.append(fg_out_path)
         fg_w, fg_h = fg_img.shape[1], fg_img.shape[0]
         fg_wh_ratio = fg_h / fg_w
@@ -352,8 +389,10 @@ def clear_and_combine_v1(base_dir, bg_path, fg_path_list, color):
     cv2.imwrite(output_path, bg_img)
     return output_path, fg_out_path_list
 
+
+
 #############################以下是demo2################################
-def clear_and_combine_v2(base_dir, bg_name, fg_list, fg_n_dict, color):
+def clear_and_combine_v2(base_dir, bg_name, fg_list, fg_n_dict, color, is_remove_badcase=True, use_removebg=False):
     '''
     parameter:
         -base_dir:图片路径
@@ -368,7 +407,9 @@ def clear_and_combine_v2(base_dir, bg_name, fg_list, fg_n_dict, color):
     fg_seg_config = 'inference_model/deploy.yaml'
     ## bg处理
     bg_n = len(os.listdir(base_dir + '/bg/' + bg_name))
-    bg_path = base_dir + '/bg/' + bg_name + '/bg' + str(random.randint(1,bg_n)) + '.jpeg'
+    bg_number = str(random.randint(1,bg_n))
+    bg_path = base_dir + '/bg/' + bg_name + '/bg' + bg_number + '.jpeg'
+    bg_key = bg_name +  bg_number
     bg_img = cv2.imread(bg_path)
     bg_w, bg_h = bg_img.shape[1], bg_img.shape[0]
     bg_wh_ratio = bg_h / bg_w
@@ -390,8 +431,15 @@ def clear_and_combine_v2(base_dir, bg_name, fg_list, fg_n_dict, color):
             idx = random.randint(0, n_base_fg-1)
         fg_name = fg_list[idx]
         fg_n = fg_n_dict[fg_name]
-        fg_path = base_dir + '/fg/' + fg_name + '/fg' + str(random.randint(1,fg_n)) + '.jpeg'
-        fg_img = seg_image(fg_seg_config, fg_path)
+        if is_remove_badcase:
+            fg_path = remove_badcase(base_dir, bg_key, fg_name, fg_n)
+        else:
+            fg_path = base_dir + '/fg/' + fg_name + '/fg' + str(random.randint(1,fg_n)) + '.jpeg'
+        if use_removebg:
+            fg_img = seg_image(fg_seg_config, fg_path)
+        else:
+            fg_img = cv2.imread(fg_path)
+            print('not use remove-bg model')
         fg_w, fg_h = fg_img.shape[1], fg_img.shape[0]
         fg_wh_ratio = fg_h / fg_w
         (loc_x, loc_y, w, h), continue_generate = generate_fg_wh(w_range, fg_wh_ratio, before_x, point, bg_w, bg_h, i)
@@ -405,7 +453,7 @@ def clear_and_combine_v2(base_dir, bg_name, fg_list, fg_n_dict, color):
     return output_path, bg_path
 
 
-def description2pix(description, base_dir='picture_hub', bg_path=None, fg_path_list=None, combine_mode=1):
+def description2pix(description, base_dir='picture_hub', bg_path=None, fg_path_list=None, combine_mode=1,is_remove_badcase=True, use_removebg=False):
     '''
     parameter:
         -description:用户输入语料
@@ -448,8 +496,66 @@ def description2pix(description, base_dir='picture_hub', bg_path=None, fg_path_l
         if '马' in description:
             fg_list.append('horse')
             fg_n_dict['horse'] = len(os.listdir(base_dir + '/fg/horse'))
-        output_path, bg_path = clear_and_combine_v2(base_dir, bg_name, fg_list, fg_n_dict, color)
+        output_path, bg_path = clear_and_combine_v2(base_dir, bg_name, fg_list, fg_n_dict, color, is_remove_badcase, use_removebg)
         return output_path, bg_path
+
+def clear_and_combine_test(base_dir, bg_path, fg_path_list, color):
+    '''
+    parameter:
+        -base_dir:图片路径
+        -bg_path:bg路径
+        -fg_path_list:fg路径list
+        -color:需要检测的颜色
+    return:
+        output_path:合成后图片路径
+        fg_out_path_list：去除背景后的前景存储路径
+    '''
+    fg_seg_config = 'inference_model/deploy.yaml'
+    ## bg处理
+    bg_img = cv2.imread(bg_path)
+    bg_w, bg_h = bg_img.shape[1], bg_img.shape[0]
+    bg_wh_ratio = bg_h / bg_w
+    bg_w = max(800, bg_w)
+    bg_h = int(bg_w * bg_wh_ratio)
+    bg_img = cv2.resize(bg_img, (bg_w, bg_h))
+    ## bg area
+    point = detect_bg(bg_img, color)
+    before_x = point[0]
+    ## fg-width范围根据 bg-width确定
+    w_range = [bg_w//10, bg_w//3]
+    ## num_fg
+    n_fg = len(fg_path_list)
+    fg_out_path_list = []
+    for i in range(n_fg):
+        fg_path = fg_path_list[i]
+        fg_img, fg_out_path = seg_image(fg_seg_config, fg_path, save=True)
+        fg_out_path_list.append(fg_out_path)
+        fg_w, fg_h = fg_img.shape[1], fg_img.shape[0]
+        fg_wh_ratio = fg_h / fg_w
+        (loc_x, loc_y, w, h), continue_generate = generate_fg_wh(w_range, fg_wh_ratio, before_x, point, bg_w, bg_h,i)
+        if not continue_generate:
+            break
+        before_x  = loc_x + w
+        bg_img = combine_picture(bg_img, fg_img, (w, h), (loc_x, loc_y))
+
+    # output_path = base_dir + '/' + 'output/' + str(int(time.time())) + '_' + str(random.randint(0,1000000)) + '.jpeg'
+    # cv2.imwrite(output_path, bg_img)
+    return bg_img 
+
+## 批量抠图处理：from fg_origin to fg
+def seg_image_all(base_dir='picture_hub', input_dir ='fg_origin', output_dir = 'fg'):
+    config = 'inference_model/deploy.yaml'
+    fg_list = ['people','ox','sheep','horse']
+    for fg in fg_list:
+        img_dir = base_dir + '/' + input_dir + '/' + fg
+        fg_n = len(os.listdir(img_dir))
+        for idx in range(1, fg_n + 1):
+            img_path = img_dir + '/fg' + str(idx) + '.jpeg'
+            out_img = seg_image(config, img_path, save = False)
+            output_path = base_dir + '/' + output_dir + '/' + fg + '/fg' + str(idx) + '.jpeg'
+            cv2.imwrite(output_path,out_img)
+            
+   
 
 #############################以下是demo1########################
 # 1.搜索背景接口
@@ -491,9 +597,9 @@ def search_fg(description, n_picture=4, base_dir='picture_hub'):
         fg_name = 'people'
     elif '马' in description:
         fg_name = 'horse'
-    fg_n = len(os.listdir(base_dir + '/fg/' + fg_name))
+    fg_n = len(os.listdir(base_dir + '/fg_origin/' + fg_name))
     fg_choice = np.random.choice(range(1,fg_n+1), n_picture, replace=False)
-    fg_path_list = [base_dir + '/fg/' + fg_name + '/fg' + str(ii) + '.jpeg' for ii in fg_choice]
+    fg_path_list = [base_dir + '/fg_origin/' + fg_name + '/fg' + str(ii) + '.jpeg' for ii in fg_choice]
     return fg_path_list 
 
 # 3.前景提取接口
